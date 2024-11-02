@@ -1,0 +1,68 @@
+services:
+  rcsoccer-sim:
+    container_name: rcsoccer-sim
+    image: rcsoccer:sim
+    privileged: true
+    build:
+      context: .
+      args:
+        - USER_NAME=${USER_NAME}
+        - GROUP_NAME=${GROUP_NAME}
+        - UID=${UID}
+        - GID=${GID}
+    environment:
+      - DISPLAY=${DISPLAY}
+      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+      #- PULSE_SERVER=unix:/tmp/pulseaudio.socket
+      #- PULSE_COOKIE=/tmp/pulseaudio.cookie
+    volumes:
+       - /tmp/.X11-unix:/tmp/.X11-unix
+       - $HOME/.Xauthority/:/root/.Xauthority
+       - /dev:/dev
+       - assets/program:/home/${USER_NAME}/rcss/program
+    devices:
+       - /dev:/dev
+    ipc: host
+    network_mode: host
+    tty: true
+    stdin_open: true
+    user: "${UID}:${GID}"
+    command: /bin/bash
+
+  rcsoccer-sim-gpu:
+    container_name: rcsoceer-sim-gpu
+    image: rcsoccer:gpu
+    privileged: true
+    build:
+      context: .
+      args:
+        - USER_NAME=${USER_NAME}
+        - GROUP_NAME=${GROUP_NAME}
+        - UID=${UID}
+        - GID=${GID}
+    environment:
+      - DISPLAY=${DISPLAY}
+      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+      #- PULSE_SERVER=unix:/tmp/pulseaudio.socket
+      #- PULSE_COOKIE=/tmp/pulseaudio.cookie
+    volumes:
+       - /tmp/.X11-unix:/tmp/.X11-unix
+       - $HOME/.Xauthority/:/root/.Xauthority
+       - /dev:/dev
+    devices:
+       - /dev:/dev
+    ipc: host
+    network_mode: host
+    tty: true
+    stdin_open: true
+    user: "${UID}:${GID}"
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+    command: /bin/bash -c "nvidia-smi"
